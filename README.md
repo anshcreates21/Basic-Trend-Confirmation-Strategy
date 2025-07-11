@@ -1,0 +1,1 @@
+# Basic-Trend-Confirmation-Strategy
