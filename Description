@@ -1,0 +1,16 @@
+
+**Project Title:**
+**Basic Trend Confirmation Strategy**
+
+**Description:**
+Engineered a streamlined trading strategy in Pine Script v6 focused on generating only the highest-confidence trade signals by combining fast-reacting momentum indicators with strict trend confirmation logic. This system blends a 2-period RSI for sharp oversold/overbought detection with EMA crossover signals and multi-bar price trend validation to eliminate noise and false positives.
+
+Key features include:
+
+* RSI(2) and EMA(9/50) integration with trend strength gating
+* Confirmation candle logic ensures price stability before signal issuance
+* Dynamic in-chart alerts and background visual cues for intuitive monitoring
+* Fully customizable user inputs and real-time market condition display table
+
+Developed independently to serve as a lightweight, confidence-filtered signal engine for discretionary trend trading in my personal algo-trading portfolio. The code prioritizes clarity, precision, and signal quality over frequency — ideal for conservative swing and intraday strategies.
+
