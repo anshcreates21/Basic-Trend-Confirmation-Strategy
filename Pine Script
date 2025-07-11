@@ -1,0 +1,79 @@
+//@version=6
+indicator("Simple Trading Strategy (Refined Confidence)", shorttitle="SimpleStrat", overlay=true)
+
+// ==========================================
+// USER INPUTS (Refined for High Confidence Signals)
+// ==========================================
+short_ema_len = input.int(9, title="Short EMA Length", minval=1)
+long_ema_len = input.int(50, title="Long EMA Length", minval=1)
+rsi_len = input.int(2, title="RSI Length (Refined)", minval=1)
+rsi_oversold = input.int(15, title="RSI Oversold Level", minval=0, maxval=50)
+rsi_overbought = input.int(85, title="RSI Overbought Level", minval=50, maxval=100)
+confirmation_candles = input.int(3, title="Confirmation Candle Count", minval=1)
+
+// ==========================================
+// CALCULATIONS
+// ==========================================
+short_ema = ta.ema(close, short_ema_len)
+long_ema = ta.ema(close, long_ema_len)
+rsi = ta.rsi(close, rsi_len)
+
+ema_cross_up = ta.crossover(short_ema, long_ema)
+ema_cross_down = ta.crossunder(short_ema, long_ema)
+
+// Trend Strength Confirmation (Price Above/Below EMAs for N candles)
+strong_up_trend = ta.barssince(close < long_ema) > confirmation_candles and short_ema > long_ema
+strong_down_trend = ta.barssince(close > long_ema) > confirmation_candles and short_ema < long_ema
+
+// ==========================================
+// SIGNAL CONDITIONS (Filtered for Confidence)
+// ==========================================
+long_condition = rsi < rsi_oversold and strong_up_trend and ema_cross_up
+short_condition = rsi > rsi_overbought and strong_down_trend and ema_cross_down
+
+// ==========================================
+// CHART DISPLAY
+// ==========================================
+plot(short_ema, color=color.blue, linewidth=2, title="Short EMA")
+plot(long_ema, color=color.orange, linewidth=2, title="Long EMA")
+
+plotshape(long_condition, style=shape.triangleup, location=location.belowbar, 
+          color=color.green, size=size.normal, title="Long Signal")
+plotshape(short_condition, style=shape.triangledown, location=location.abovebar, 
+          color=color.red, size=size.normal, title="Short Signal")
+
+plotchar(long_condition, char="BUY", location=location.belowbar, 
+         color=color.green, size=size.small, text="BUY")
+plotchar(short_condition, char="SELL", location=location.abovebar, 
+         color=color.red, size=size.small, text="SELL")
+
+// ==========================================
+// ALERTS
+// ==========================================
+alertcondition(long_condition, title="Long Signal Alert", 
+               message="LONG Signal on {{ticker}} at {{close}} - Time: {{time}}")
+alertcondition(short_condition, title="Short Signal Alert", 
+               message="SHORT Signal on {{ticker}} at {{close}} - Time: {{time}}")
+
+any_signal = long_condition or short_condition
+alertcondition(any_signal, title="Any Signal Alert", 
+               message="Signal triggered on {{ticker}} at {{close}} - Time: {{time}}")
+
+// ==========================================
+// BACKGROUND HIGHLIGHTS
+// ==========================================
+bgcolor(long_condition ? color.new(color.green, 95) : na, title="Long Signal Background")
+bgcolor(short_condition ? color.new(color.red, 95) : na, title="Short Signal Background")
+
+// ==========================================
+// TABLE FOR CURRENT VALUES
+// ==========================================
+if barstate.islast
+    var table info_table = table.new(position.top_right, 2, 3, 
+                                     bgcolor=color.white, border_width=1)
+    table.cell(info_table, 0, 0, "Short EMA", text_color=color.blue, text_size=size.small)
+    table.cell(info_table, 1, 0, str.tostring(short_ema, "#.##"), text_size=size.small)
+    table.cell(info_table, 0, 1, "Long EMA", text_color=color.orange, text_size=size.small)
+    table.cell(info_table, 1, 1, str.tostring(long_ema, "#.##"), text_size=size.small)
+    table.cell(info_table, 0, 2, "RSI", text_color=color.purple, text_size=size.small)
+    table.cell(info_table, 1, 2, str.tostring(rsi, "#.##"), text_size=size.small)
